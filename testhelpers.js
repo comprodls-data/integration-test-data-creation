@@ -35,6 +35,18 @@ function post(requestURL, paramJSON, requestHeader, callback) {
         .end(callback);
 }
 
+function put(requestURL, requestBody, requestHeader, callback) {
+    var url = requestURL;
+    var body = requestBody;
+    var header = requestHeader;
+
+    request
+        .put(url)
+        .send(body)
+        .set(header)
+        .end(callback);
+}
+
 function get(requestURL, queries, requestHeader, callback) {
     var url = requestURL;
     var queryArray = queries;
@@ -75,5 +87,6 @@ module.exports = {
     post: post,
     get: get,
     del: del,
+    put: put,
     uploadFile:postAttachment
 };

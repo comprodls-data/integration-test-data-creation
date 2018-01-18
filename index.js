@@ -20,8 +20,6 @@ if(process.env.Environment.startsWith("Production")){
     gbl_auth_service_url = "http://auth-staging1.comprodls.com/";
 }
 
-
-
 let filePath = __dirname+'/output.txt';
 let output = {};
 
@@ -88,6 +86,36 @@ function authenticate(org,username,password,callback){
     });
 }
 
+function updateOrgSettings(org,callback){
+    testhelpers.put(gbl_auth_service_url + 'org/' + org + '/settings',
+        {"lti": {
+            "auto_entitle_classproducts": false,
+            "enable": true,
+            "user_enrollments": 500
+        },
+            "product": {
+                "promote": "enabled",
+                "archive": "enabled",
+                "ingestion": "enabled"
+            },
+            "sis": {
+                "productid": [],
+                "product_entitlement": false
+            }},
+        { "Authorization" : token},
+        function(err , res) {
+            if (err) {
+                console.log(err);
+                console.log("Error while updating settings of org".red);
+            }
+            else {
+                console.log(("Successfully updating settings of org ").green);
+            }
+            if(callback){
+                callback();
+            }
+        });
+}
 
 function setupUsers(callback){
     var org = config_data.sis_import_users.orgid;
@@ -248,15 +276,17 @@ function writeDataToJSONFile(jsonFilePath){
 }
 
 authenticate(consumerOrg1,process.env.Admin_Username_consumerOrg1,process.env.Admin_Password_consumerOrg1,function(){
-    registerProducts(function(){
-       ingestProducts(function(){
-          setupUsers(function(){
-              console.log("*********** Final output *************");
-              console.log(JSON.stringify(output));
-              console.log("************************");
-              writeDataToJSONFile(filePath);
-          });
-       });
+    updateOrgSettings(consumerOrg1,function(){
+        registerProducts(function(){
+            ingestProducts(function(){
+                setupUsers(function(){
+                    console.log("*********** Final output *************");
+                    console.log(JSON.stringify(output));
+                    console.log("************************");
+                    writeDataToJSONFile(filePath);
+                });
+            });
+        });
     });
 });
 
